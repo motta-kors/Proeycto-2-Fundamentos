@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Grupo 9 - Chatbot de Pinturas</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <main class="card">
+    <h1>Chatbot de Pinturas y Recubrimientos</h1>
+    <p class="sub">Proyecto N.º 2 · Fundamentos de Inteligencia Artificial · Grupo 9</p>
+
+    <div class="mode">
+      <label><input type="radio" name="modo" value="prolog" checked> Prolog</label>
+      <label><input type="radio" name="modo" value="llm"> LLM + Python</label>
+    </div>
+
+    <div id="chat" class="chat"></div>
+
+    <form id="form">
+      <input id="pregunta" autocomplete="off" placeholder="Ej.: ¿Qué pintura sirve para madera exterior?" required>
+      <button>Enviar</button>
+    </form>
+
+    <p class="tips">Prueba: madera exterior · metal con corrosión · preparar hormigón</p>
+  </main>
+<script>
+const form = document.getElementById('form');
+const input = document.getElementById('pregunta');
+const chat = document.getElementById('chat');
+
+function burbuja(texto, clase) {
+  const d = document.createElement('div');
+  d.className = 'msg ' + clase;
+  d.textContent = texto;
+  chat.appendChild(d);
+  chat.scrollTop = chat.scrollHeight;
+}
+
+form.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const pregunta = input.value.trim();
+  if (!pregunta) return;
+  const modo = document.querySelector('input[name="modo"]:checked').value;
+  burbuja(pregunta, 'user');
+  input.value = '';
+  try {
+    const r = await fetch('/api/chat', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({pregunta, modo})
+    });
+    const data = await r.json();
+    burbuja(data.respuesta || data.error || 'Sin respuesta', 'bot');
+  } catch (err) {
+    burbuja('No fue posible conectar con el servidor.', 'bot');
+  }
+});
+</script>
+</body>
+</html>
