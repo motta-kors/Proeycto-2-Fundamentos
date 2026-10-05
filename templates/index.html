@@ -19,12 +19,16 @@
     <div id="chat" class="chat"></div>
 
     <form id="form">
-      <input id="pregunta" autocomplete="off" placeholder="Ej.: ¿Qué pintura sirve para madera exterior?" required>
+      <input id="pregunta" autocomplete="off" placeholder="Ej.: ¿Qué pinturas sirven para metal exterior?" required>
       <button>Enviar</button>
     </form>
 
-    <p class="tips">Prueba: madera exterior · metal con corrosión · preparar hormigón</p>
+    <p class="tips">
+      Prueba: metal exterior · productos Tekbond · acabado mate ·
+      tipo de spray acrílico · pinturas para graffiti
+    </p>
   </main>
+
 <script>
 const form = document.getElementById('form');
 const input = document.getElementById('pregunta');
@@ -42,15 +46,18 @@ form.addEventListener('submit', async (e) => {
   e.preventDefault();
   const pregunta = input.value.trim();
   if (!pregunta) return;
+
   const modo = document.querySelector('input[name="modo"]:checked').value;
   burbuja(pregunta, 'user');
   input.value = '';
+
   try {
     const r = await fetch('/api/chat', {
       method: 'POST',
       headers: {'Content-Type': 'application/json'},
       body: JSON.stringify({pregunta, modo})
     });
+
     const data = await r.json();
     burbuja(data.respuesta || data.error || 'Sin respuesta', 'bot');
   } catch (err) {
