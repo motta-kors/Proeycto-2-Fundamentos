@@ -1,40 +1,57 @@
 CONOCIMIENTO = '''
 DOMINIO: Pinturas y recubrimientos.
 
-Superficies conocidas: madera, metal, hormigon, yeso, ladrillo.
-Ubicaciones: interior, exterior.
-Pinturas: latex, esmalte_agua, esmalte_sintetico, acrilica, anticorrosivo, barniz.
+Pinturas registradas:
+- esmalte_sintetico
+- esmalte_al_agua
+- latex_interior
+- latex_exterior
+- oleo_opaco
+- anticorrosivo
+- barniz_marino
+- laca_nitro
+- spray_acrilico
+- spray_alta_temperatura
+- primer_automotriz
+- impermeabilizante
+- pintura_piso
+- pintura_piscina
+- pintura_tizada
 
-Compatibilidad pintura-superficie:
-- latex: yeso, hormigon, ladrillo.
-- esmalte_agua: madera, metal.
-- esmalte_sintetico: madera, metal.
-- acrilica: hormigon, ladrillo.
-- anticorrosivo: metal.
-- barniz: madera.
+Marcas registradas:
+sipa, ceresita, tricolor, chilcorrofin, mtn, molotow, tekbond, toro_negro.
 
-Compatibilidad por ubicacion:
-- latex: interior.
-- esmalte_agua: interior y exterior.
-- esmalte_sintetico: interior y exterior.
-- acrilica: interior y exterior.
-- anticorrosivo: interior y exterior.
-- barniz: interior y exterior.
+Superficies:
+madera, metal, muro, hormigon, yeso, auto, piscina, piso, graffiti.
 
-Protecciones registradas:
-- anticorrosivo protege contra corrosion.
-- esmalte_sintetico protege frente a humedad.
-- acrilica es apta para exposicion exterior.
-- barniz protege madera frente a humedad.
+Tipos/base:
+agua, solvente, aerosol.
 
-Preparacion basica:
-- madera: lijar y limpiar polvo.
-- metal: eliminar oxido y desengrasar.
-- hormigon: limpiar y secar.
-- yeso: limpiar y sellar si es necesario.
-- ladrillo: limpiar y secar.
+Acabados:
+mate, brillante, semibrillo.
+
+Relaciones principales:
+- es_marca(Pintura, Marca)
+- tipo(Pintura, Tipo)
+- acabado(Pintura, Acabado)
+- sirve_para(Pintura, Superficie)
+- uso(Pintura, interior/exterior)
+- caracteristica(Pintura, Caracteristica)
+
+Características registradas:
+- anticorrosivo: protege_oxido
+- barniz_marino: resistente_humedad
+- latex_exterior: resistente_clima
+- impermeabilizante: repele_agua
+- spray_alta_temperatura: resistente_calor
+- primer_automotriz: mejora_adherencia
+- pintura_piscina: resistente_agua
+- pintura_piso: alto_transito
+- spray_acrilico: secado_rapido
+- pintura_tizada: alta_cobertura
 
 REGLA PRINCIPAL:
-Recomendar solo productos que esten explicitamente respaldados por este conocimiento.
-Si falta informacion, indicarlo en vez de inventar datos.
+Responder solamente con información respaldada por la base Prolog del proyecto.
+No inventar productos, marcas, compatibilidades, acabados ni características.
+Si la base no contiene la respuesta, indicarlo claramente.
 '''.strip()
