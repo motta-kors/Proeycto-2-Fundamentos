@@ -1,249 +1,357 @@
-% ============================================================
-% PROYECTO N°2 - FUNDAMENTOS DE INTELIGENCIA ARTIFICIAL
-% Chatbot experto en pinturas y recubrimientos
-% Implementación en Prolog
-%
-% Recomendado: SWI-Prolog
-% Abrir este archivo en Visual Studio Code y ejecutar:
-%   swipl -s chatbot_pinturas.pl
-% Luego:
-%   ?- iniciar.
-% ============================================================
+% -- PROYECTO 2 - PROLOG --
+% -- SISTEMA EXPERTO / CHATBOT DE PINTURAS --
+% Base principal alineada con Pinturas_Motta.pl
 
 :- encoding(utf8).
 
-% ------------------------------------------------------------
-% 1. BASE DE CONOCIMIENTO
-% ------------------------------------------------------------
+% =============================
+% HECHOS
+% =============================
 
-% Superficies conocidas
-es_superficie(madera).
-es_superficie(metal).
-es_superficie(hormigon).
-es_superficie(yeso).
-es_superficie(ladrillo).
+% PRODUCTOS pintura(X).
+pintura(esmalte_sintetico).
+pintura(esmalte_al_agua).
+pintura(latex_interior).
+pintura(latex_exterior).
+pintura(oleo_opaco).
+pintura(anticorrosivo).
+pintura(barniz_marino).
+pintura(laca_nitro).
+pintura(spray_acrilico).
+pintura(spray_alta_temperatura).
+pintura(primer_automotriz).
+pintura(impermeabilizante).
+pintura(pintura_piso).
+pintura(pintura_piscina).
+pintura(pintura_tizada).
 
-% Ubicaciones
-es_ubicacion(interior).
-es_ubicacion(exterior).
+% MARCAS
+marca(sipa).
+marca(ceresita).
+marca(tricolor).
+marca(chilcorrofin).
+marca(mtn).
+marca(molotow).
+marca(tekbond).
+marca(toro_negro).
 
-% Tipos de pintura / recubrimiento
-es_pintura(latex).
-es_pintura(esmalte_agua).
-es_pintura(esmalte_sintetico).
-es_pintura(acrilica).
-es_pintura(anticorrosivo).
-es_pintura(barniz).
+% MARCA DEL PRODUCTO
+es_marca(esmalte_sintetico, sipa).
+es_marca(esmalte_al_agua, ceresita).
+es_marca(latex_interior, sipa).
+es_marca(latex_exterior, tricolor).
+es_marca(oleo_opaco, chilcorrofin).
+es_marca(anticorrosivo, chilcorrofin).
+es_marca(barniz_marino, sipa).
+es_marca(laca_nitro, sipa).
+es_marca(spray_acrilico, mtn).
+es_marca(spray_alta_temperatura, tekbond).
+es_marca(primer_automotriz, tekbond).
+es_marca(impermeabilizante, ceresita).
+es_marca(pintura_piso, tricolor).
+es_marca(pintura_piscina, chilcorrofin).
+es_marca(pintura_tizada, toro_negro).
 
-% Compatibilidad pintura - superficie
-apto_para(latex, yeso).
-apto_para(latex, hormigon).
-apto_para(latex, ladrillo).
+% TIPO / BASE
+tipo(esmalte_sintetico, solvente).
+tipo(esmalte_al_agua, agua).
+tipo(latex_interior, agua).
+tipo(latex_exterior, agua).
+tipo(oleo_opaco, solvente).
+tipo(anticorrosivo, solvente).
+tipo(barniz_marino, solvente).
+tipo(laca_nitro, solvente).
+tipo(spray_acrilico, aerosol).
+tipo(spray_alta_temperatura, aerosol).
+tipo(primer_automotriz, aerosol).
+tipo(impermeabilizante, agua).
+tipo(pintura_piso, agua).
+tipo(pintura_piscina, solvente).
+tipo(pintura_tizada, aerosol).
 
-apto_para(esmalte_agua, madera).
-apto_para(esmalte_agua, metal).
+% ACABADOS
+acabado(esmalte_sintetico, brillante).
+acabado(esmalte_al_agua, semibrillo).
+acabado(latex_interior, mate).
+acabado(latex_exterior, mate).
+acabado(oleo_opaco, mate).
+acabado(anticorrosivo, mate).
+acabado(barniz_marino, brillante).
+acabado(laca_nitro, brillante).
+acabado(spray_acrilico, mate).
+acabado(spray_acrilico, brillante).
+acabado(spray_alta_temperatura, mate).
+acabado(primer_automotriz, mate).
+acabado(impermeabilizante, mate).
+acabado(pintura_piso, semibrillo).
+acabado(pintura_piscina, semibrillo).
+acabado(pintura_tizada, mate).
 
-apto_para(esmalte_sintetico, madera).
-apto_para(esmalte_sintetico, metal).
+% SUPERFICIES
+superficie(madera).
+superficie(metal).
+superficie(muro).
+superficie(hormigon).
+superficie(yeso).
+superficie(auto).
+superficie(piscina).
+superficie(piso).
+superficie(graffiti).
 
-apto_para(acrilica, hormigon).
-apto_para(acrilica, ladrillo).
+% PRODUCTO APTO PARA SUPERFICIE
+sirve_para(esmalte_sintetico, madera).
+sirve_para(esmalte_sintetico, metal).
+sirve_para(esmalte_al_agua, madera).
+sirve_para(esmalte_al_agua, metal).
+sirve_para(latex_interior, muro).
+sirve_para(latex_interior, yeso).
+sirve_para(latex_exterior, muro).
+sirve_para(latex_exterior, hormigon).
+sirve_para(oleo_opaco, madera).
+sirve_para(oleo_opaco, metal).
+sirve_para(anticorrosivo, metal).
+sirve_para(barniz_marino, madera).
+sirve_para(laca_nitro, madera).
+sirve_para(spray_acrilico, metal).
+sirve_para(spray_acrilico, madera).
+sirve_para(spray_acrilico, graffiti).
+sirve_para(spray_alta_temperatura, metal).
+sirve_para(primer_automotriz, auto).
+sirve_para(primer_automotriz, metal).
+sirve_para(impermeabilizante, muro).
+sirve_para(impermeabilizante, hormigon).
+sirve_para(pintura_piso, piso).
+sirve_para(pintura_piso, hormigon).
+sirve_para(pintura_piscina, piscina).
+sirve_para(pintura_tizada, graffiti).
 
-apto_para(anticorrosivo, metal).
-apto_para(barniz, madera).
+% USO: interior / exterior
+uso(esmalte_sintetico, interior).
+uso(esmalte_sintetico, exterior).
+uso(esmalte_al_agua, interior).
+uso(esmalte_al_agua, exterior).
+uso(latex_interior, interior).
+uso(latex_exterior, exterior).
+uso(oleo_opaco, interior).
+uso(anticorrosivo, exterior).
+uso(barniz_marino, exterior).
+uso(laca_nitro, interior).
+uso(spray_acrilico, interior).
+uso(spray_acrilico, exterior).
+uso(spray_alta_temperatura, exterior).
+uso(primer_automotriz, exterior).
+uso(impermeabilizante, exterior).
+uso(pintura_piso, interior).
+uso(pintura_piso, exterior).
+uso(pintura_piscina, exterior).
+uso(pintura_tizada, exterior).
 
-% Compatibilidad pintura - ubicación
-apto_ubicacion(latex, interior).
-apto_ubicacion(esmalte_agua, interior).
-apto_ubicacion(esmalte_agua, exterior).
-apto_ubicacion(esmalte_sintetico, interior).
-apto_ubicacion(esmalte_sintetico, exterior).
-apto_ubicacion(acrilica, interior).
-apto_ubicacion(acrilica, exterior).
-apto_ubicacion(anticorrosivo, interior).
-apto_ubicacion(anticorrosivo, exterior).
-apto_ubicacion(barniz, interior).
-apto_ubicacion(barniz, exterior).
+% CARACTERISTICAS
+caracteristica(anticorrosivo, protege_oxido).
+caracteristica(barniz_marino, resistente_humedad).
+caracteristica(latex_exterior, resistente_clima).
+caracteristica(impermeabilizante, repele_agua).
+caracteristica(spray_alta_temperatura, resistente_calor).
+caracteristica(primer_automotriz, mejora_adherencia).
+caracteristica(pintura_piscina, resistente_agua).
+caracteristica(pintura_piso, alto_transito).
+caracteristica(spray_acrilico, secado_rapido).
+caracteristica(pintura_tizada, alta_cobertura).
 
-% Protección entregada por algunos productos
-protege_de(anticorrosivo, corrosion).
-protege_de(esmalte_sintetico, humedad).
-protege_de(acrilica, exposicion_exterior).
-protege_de(barniz, humedad).
+% =============================
+% REGLAS
+% =============================
 
-% Preparación básica sugerida según superficie
-requiere_preparacion(madera, lijar).
-requiere_preparacion(madera, limpiar_polvo).
-requiere_preparacion(metal, eliminar_oxido).
-requiere_preparacion(metal, desengrasar).
-requiere_preparacion(hormigon, limpiar).
-requiere_preparacion(hormigon, secar).
-requiere_preparacion(yeso, limpiar).
-requiere_preparacion(yeso, sellar_si_es_necesario).
-requiere_preparacion(ladrillo, limpiar).
-requiere_preparacion(ladrillo, secar).
+recomendable(Pintura, Superficie) :-
+    pintura(Pintura),
+    superficie(Superficie),
+    sirve_para(Pintura, Superficie).
 
-% ------------------------------------------------------------
-% 2. REGLAS DE INFERENCIA
-% ------------------------------------------------------------
+recomendable_uso(Pintura, Superficie, Uso) :-
+    pintura(Pintura),
+    superficie(Superficie),
+    member(Uso, [interior, exterior]),
+    sirve_para(Pintura, Superficie),
+    uso(Pintura, Uso).
 
-recomendar(Pintura, Superficie, Ubicacion) :-
-    es_superficie(Superficie),
-    es_ubicacion(Ubicacion),
-    apto_para(Pintura, Superficie),
-    apto_ubicacion(Pintura, Ubicacion).
+para_exterior(Pintura) :-
+    pintura(Pintura),
+    uso(Pintura, exterior).
 
-recomendar_proteccion(Pintura, Superficie, Condicion) :-
-    es_superficie(Superficie),
-    apto_para(Pintura, Superficie),
-    protege_de(Pintura, Condicion).
+para_interior(Pintura) :-
+    pintura(Pintura),
+    uso(Pintura, interior).
 
-preparacion(Superficie, Paso) :-
-    es_superficie(Superficie),
-    requiere_preparacion(Superficie, Paso).
+al_agua(Pintura) :-
+    tipo(Pintura, agua).
 
-% ------------------------------------------------------------
-% 3. RESPUESTAS DEL CHATBOT
-% ------------------------------------------------------------
+en_aerosol(Pintura) :-
+    tipo(Pintura, aerosol).
 
-mostrar_lista([]) :-
-    writeln('  - No se encontraron resultados con el conocimiento actual.').
+es_mate(Pintura) :-
+    acabado(Pintura, mate).
 
-mostrar_lista(Lista) :-
-    Lista \= [],
-    forall(member(Elemento, Lista),
-           format('  - ~w~n', [Elemento])).
+metal_exterior(Pintura) :-
+    sirve_para(Pintura, metal),
+    uso(Pintura, exterior).
 
-responder_recomendacion(Superficie, Ubicacion) :-
-    findall(Pintura,
-            recomendar(Pintura, Superficie, Ubicacion),
-            Pinturas0),
-    sort(Pinturas0, Pinturas),
-    format('Para ~w en ~w, las opciones registradas son:~n',
-           [Superficie, Ubicacion]),
-    mostrar_lista(Pinturas).
+protege_metal(Pintura) :-
+    sirve_para(Pintura, metal),
+    caracteristica(Pintura, protege_oxido).
 
-responder_proteccion(Superficie, Condicion) :-
-    findall(Pintura,
-            recomendar_proteccion(Pintura, Superficie, Condicion),
-            Pinturas0),
-    sort(Pinturas0, Pinturas),
-    format('Para una superficie de ~w con condición ~w:~n',
-           [Superficie, Condicion]),
-    mostrar_lista(Pinturas).
+producto_de_marca(Pintura, Marca) :-
+    pintura(Pintura),
+    marca(Marca),
+    es_marca(Pintura, Marca).
 
-responder_preparacion(Superficie) :-
-    findall(Paso,
-            preparacion(Superficie, Paso),
-            Pasos0),
-    sort(Pasos0, Pasos),
-    format('Preparación básica sugerida para ~w:~n', [Superficie]),
-    mostrar_lista(Pasos).
+comparten_superficie(P1, P2, Superficie) :-
+    sirve_para(P1, Superficie),
+    sirve_para(P2, Superficie),
+    P1 \= P2.
 
-% ------------------------------------------------------------
-% 4. DETECCIÓN SIMPLE DE PALABRAS EN UNA PREGUNTA
-% ------------------------------------------------------------
+producto_con_caracteristica(Pintura, Caracteristica) :-
+    pintura(Pintura),
+    caracteristica(Pintura, Caracteristica).
 
-contiene(Texto, Palabra) :-
-    sub_string(Texto, _, _, _, Palabra).
+% =============================
+% CONSULTAS DE EJEMPLO
+% =============================
 
-detectar_superficie(Texto, madera) :- contiene(Texto, "madera"), !.
-detectar_superficie(Texto, metal) :- contiene(Texto, "metal"), !.
-detectar_superficie(Texto, hormigon) :- contiene(Texto, "hormigon"), !.
-detectar_superficie(Texto, hormigon) :- contiene(Texto, "hormigón"), !.
-detectar_superficie(Texto, yeso) :- contiene(Texto, "yeso"), !.
-detectar_superficie(Texto, ladrillo) :- contiene(Texto, "ladrillo"), !.
+% ?- pintura(latex_interior).
+% ?- tipo(latex_interior, Tipo).
+% ?- sirve_para(Pintura, metal).
+% ?- para_exterior(Pintura).
+% ?- producto_de_marca(Pintura, tekbond).
+% ?- es_mate(Pintura).
+% ?- al_agua(Pintura).
+% ?- en_aerosol(Pintura).
+% ?- protege_metal(Pintura).
+% ?- recomendable(anticorrosivo, metal).
+% ?- recomendable_uso(Pintura, metal, exterior).
+% ?- sirve_para(Pintura, piscina).
+% ?- sirve_para(Pintura, graffiti).
+% ?- comparten_superficie(spray_acrilico, Otro, Superficie).
 
-detectar_ubicacion(Texto, exterior) :- contiene(Texto, "exterior"), !.
-detectar_ubicacion(Texto, interior) :- contiene(Texto, "interior"), !.
+% =============================
+% CHATBOT DE TERMINAL
+% =============================
+% Para iniciarlo manualmente:
+% ?- iniciar_chat.
+%
+% No se usa initialization/1 porque este archivo también es consultado
+% desde Python y una inicialización automática bloquearía la API web.
 
-detectar_condicion(Texto, corrosion) :- contiene(Texto, "corrosion"), !.
-detectar_condicion(Texto, corrosion) :- contiene(Texto, "corrosión"), !.
-detectar_condicion(Texto, corrosion) :- contiene(Texto, "oxido"), !.
-detectar_condicion(Texto, corrosion) :- contiene(Texto, "óxido"), !.
-detectar_condicion(Texto, humedad) :- contiene(Texto, "humedad"), !.
-detectar_condicion(Texto, exposicion_exterior) :-
-    contiene(Texto, "exposicion"), !.
-detectar_condicion(Texto, exposicion_exterior) :-
-    contiene(Texto, "exposición"), !.
+iniciar_chat :-
+    nl,
+    write('---------------------------------------------'), nl,
+    write('Bienvenido al chatbot de Pinturas Motta!'), nl,
+    write('Puedes preguntar por pinturas, marcas, tipos,'), nl,
+    write('superficies, acabados y usos.'), nl,
+    write('Escribe "salir" para terminar.'), nl,
+    write('---------------------------------------------'), nl,
+    bucle_chat.
 
-es_pregunta_preparacion(Texto) :-
-    ( contiene(Texto, "prepar")
-    ; contiene(Texto, "antes")
-    ; contiene(Texto, "limpiar")
-    ; contiene(Texto, "lijar")
+bucle_chat :-
+    nl,
+    write('Usuario > '),
+    flush_output(current_output),
+    read_line_to_string(user_input, Frase),
+    (   Frase == "salir"
+    ->  write('Bot > Hasta pronto!'), nl
+    ;   procesar_consulta(Frase, Respuesta),
+        format('Bot > ~w~n', [Respuesta]),
+        bucle_chat
     ).
 
-% ------------------------------------------------------------
-% 5. INTERPRETACIÓN DE LA PREGUNTA
-% ------------------------------------------------------------
+procesar_consulta(Frase, Respuesta) :-
+    string_lower(Frase, FraseMinus),
+    split_string(FraseMinus, " ", " ,.?¿¡!", TokenStr),
+    maplist(atom_string, Tokens, TokenStr),
+    interpretar(Tokens, Respuesta).
 
-procesar_pregunta(TextoOriginal) :-
-    string_lower(TextoOriginal, Texto),
-    (
-        Texto = "salir"
-        -> writeln('Hasta luego.')
-    ;
-        es_pregunta_preparacion(Texto),
-        detectar_superficie(Texto, Superficie)
-        -> responder_preparacion(Superficie),
-           continuar
-    ;
-        detectar_superficie(Texto, Superficie),
-        detectar_condicion(Texto, Condicion)
-        -> responder_proteccion(Superficie, Condicion),
-           continuar
-    ;
-        detectar_superficie(Texto, Superficie),
-        detectar_ubicacion(Texto, Ubicacion)
-        -> responder_recomendacion(Superficie, Ubicacion),
-           continuar
-    ;
-        detectar_superficie(Texto, Superficie)
-        -> format('Entendí la superficie: ~w.~n', [Superficie]),
-           writeln('Indica también si es interior o exterior.'),
-           continuar
-    ;
-        writeln('No pude interpretar la pregunta con el conocimiento actual.'),
-        writeln('Ejemplos:'),
-        writeln('  - Que pintura sirve para madera exterior?'),
-        writeln('  - Que pintura sirve para metal con corrosion?'),
-        writeln('  - Como preparo una superficie de madera?'),
-        continuar
+interpretar(Tokens, Respuesta) :-
+    (member(hola, Tokens) ; member(buenas, Tokens)),
+    !,
+    Respuesta = 'Hola! Preguntame por pinturas, marcas, superficies, tipos o acabados.'.
+
+interpretar(Tokens, Respuesta) :-
+    member(marca, Tokens),
+    member(Pintura, Tokens),
+    pintura(Pintura),
+    !,
+    findall(M, es_marca(Pintura, M), Marcas),
+    format(string(Respuesta), 'La pintura ~w es de la marca: ~w', [Pintura, Marcas]).
+
+interpretar(Tokens, Respuesta) :-
+    member(Marca, Tokens),
+    marca(Marca),
+    !,
+    findall(P, es_marca(P, Marca), Productos),
+    format(string(Respuesta), 'Los productos de la marca ~w son: ~w', [Marca, Productos]).
+
+interpretar(Tokens, Respuesta) :-
+    (member(sirve, Tokens) ; member(superficie, Tokens)),
+    member(Pintura, Tokens),
+    pintura(Pintura),
+    !,
+    findall(S, sirve_para(Pintura, S), Superficies),
+    format(string(Respuesta), '~w sirve para las siguientes superficies: ~w', [Pintura, Superficies]).
+
+interpretar(Tokens, Respuesta) :-
+    member(Superficie, Tokens),
+    superficie(Superficie),
+    !,
+    findall(P, sirve_para(P, Superficie), Pinturas),
+    format(string(Respuesta), 'Las pinturas recomendadas para ~w son: ~w', [Superficie, Pinturas]).
+
+interpretar(Tokens, Respuesta) :-
+    member(tipo, Tokens),
+    member(Pintura, Tokens),
+    pintura(Pintura),
+    !,
+    findall(T, tipo(Pintura, T), Tipos),
+    format(string(Respuesta), 'La pintura ~w es de tipo/base: ~w', [Pintura, Tipos]).
+
+interpretar(Tokens, Respuesta) :-
+    member(acabado, Tokens),
+    member(Pintura, Tokens),
+    pintura(Pintura),
+    !,
+    findall(A, acabado(Pintura, A), Acabados),
+    format(string(Respuesta), 'La pintura ~w tiene acabado: ~w', [Pintura, Acabados]).
+
+interpretar(Tokens, Respuesta) :-
+    member(Acabado, Tokens),
+    member(Acabado, [mate, brillante, semibrillo]),
+    !,
+    findall(P, acabado(P, Acabado), Pinturas),
+    format(string(Respuesta), 'Las pinturas con acabado ~w son: ~w', [Acabado, Pinturas]).
+
+interpretar(Tokens, Respuesta) :-
+    member(Uso, Tokens),
+    member(Uso, [interior, exterior]),
+    !,
+    findall(P, uso(P, Uso), Pinturas),
+    format(string(Respuesta), 'Las pinturas para ~w son: ~w', [Uso, Pinturas]).
+
+interpretar(Tokens, Respuesta) :-
+    member(Pintura, Tokens), pintura(Pintura),
+    member(Superficie, Tokens), superficie(Superficie),
+    !,
+    (   recomendable(Pintura, Superficie)
+    ->  format(string(Respuesta), 'Si, ~w es recomendable para ~w.', [Pintura, Superficie])
+    ;   format(string(Respuesta), 'No, ~w no esta registrada como recomendable para ~w.', [Pintura, Superficie])
     ).
 
-continuar :-
-    nl,
-    writeln('Escribe otra pregunta o escribe "salir":'),
-    read_line_to_string(user_input, Entrada),
-    procesar_pregunta(Entrada).
+interpretar(Tokens, Respuesta) :-
+    (member(caracteristica, Tokens) ; member(caracteristicas, Tokens)),
+    member(Pintura, Tokens),
+    pintura(Pintura),
+    !,
+    findall(C, caracteristica(Pintura, C), Caracteristicas),
+    (   Caracteristicas \= []
+    ->  format(string(Respuesta), '~w tiene estas caracteristicas: ~w', [Pintura, Caracteristicas])
+    ;   format(string(Respuesta), 'No hay caracteristicas especiales registradas para ~w.', [Pintura])
+    ).
 
-% ------------------------------------------------------------
-% 6. INICIO DEL CHATBOT
-% ------------------------------------------------------------
-
-iniciar :-
-    nl,
-    writeln('====================================================='),
-    writeln('   CHATBOT EXPERTO EN PINTURAS Y RECUBRIMIENTOS'),
-    writeln('====================================================='),
-    writeln('Puedes preguntar, por ejemplo:'),
-    writeln('  - Que pintura sirve para madera exterior?'),
-    writeln('  - Que pintura sirve para metal interior?'),
-    writeln('  - Que pintura sirve para metal con corrosion?'),
-    writeln('  - Como preparo una superficie de hormigon?'),
-    writeln('Escribe "salir" para terminar.'),
-    nl,
-    read_line_to_string(user_input, Entrada),
-    procesar_pregunta(Entrada).
-
-% ------------------------------------------------------------
-% 7. CONSULTAS DIRECTAS DE PRUEBA
-% ------------------------------------------------------------
-%
-% ?- recomendar(P, madera, exterior).
-% ?- recomendar(P, metal, interior).
-% ?- recomendar_proteccion(P, metal, corrosion).
-% ?- preparacion(madera, Paso).
-% ?- iniciar.
-%
+interpretar(_, 'No logro entender tu pregunta. Prueba preguntando por una pintura, marca, superficie, tipo, acabado o uso.').
