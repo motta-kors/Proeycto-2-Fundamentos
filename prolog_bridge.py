@@ -157,7 +157,8 @@ def responder_prolog(pregunta: str) -> str:
             )
 
         # Pinturas para una superficie.
-        if superficie:
+        # Si pregunta por óxido/corrosión en metal, se deja pasar al caso específico.
+        if superficie and not (superficie == "metal" and ("oxido" in t or "corrosion" in t)):
             datos = consultar_variable("sirve_para", "_VAR_", superficie)
             return f"Pinturas para {superficie}: {lista_texto(datos)}"
 
