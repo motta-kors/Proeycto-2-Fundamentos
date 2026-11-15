@@ -4,27 +4,24 @@ from prolog_bridge import responder_prolog
 
 app = Flask(__name__)
 
-@app.get("/")
-def index():
-    return render_template("index.html")
 
-@app.post("/api/chat")
+@app.get('/')
+def inicio():
+    return render_template('index.html')
+
+
+@app.post('/api/chat')
 def chat():
-    data = request.get_json(silent=True) or {}
-    pregunta = str(data.get("pregunta", "")).strip()
-    modo = str(data.get("modo", "prolog")).lower()
+    datos = request.get_json(silent=True) or {}
+    pregunta = datos.get('pregunta', '') if isinstance(datos, dict) else ''
+    modo = datos.get('modo', 'prolog') if isinstance(datos, dict) else ''
+    if not isinstance(pregunta, str) or not pregunta.strip() or len(pregunta) > 1500:
+        return jsonify(error='Escribe una pregunta de hasta 1500 caracteres.'), 400
+    if modo not in ('prolog', 'llm'):
+        return jsonify(error='Modo no válido.'), 400
+    respuesta = responder_prolog(pregunta) if modo == 'prolog' else responder_llm(pregunta)
+    return jsonify(respuesta=respuesta)
 
-    if not pregunta:
-        return jsonify({"ok": False, "error": "La pregunta está vacía."}), 400
 
-    if modo == "llm":
-        respuesta = responder_llm(pregunta)
-    elif modo == "prolog":
-        respuesta = responder_prolog(pregunta)
-    else:
-        return jsonify({"ok": False, "error": "Modo no válido."}), 400
-
-    return jsonify({"ok": True, "modo": modo, "respuesta": respuesta})
-
-if __name__ == "__main__":
-    app.run(debug=True)
+if __name__ == '__main__':
+    app.run(debug=False, port=5000)

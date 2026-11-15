@@ -4,28 +4,29 @@ from chatbot_llm import responder_llm
 from prolog_bridge import responder_prolog
 
 BASE = Path(__file__).parent
-ENTRADA = BASE / "preguntas_20.csv"
-SALIDA = BASE / "resultados_20_preguntas.csv"
 
-filas = []
-with ENTRADA.open(encoding="utf-8-sig", newline="") as f:
-    for row in csv.DictReader(f):
-        numero = row["numero"]
-        pregunta = row["pregunta"]
-        print(f"[{numero}/20] {pregunta}")
-        r_prolog = responder_prolog(pregunta)
-        r_llm = responder_llm(pregunta)
+
+def evaluar():
+    with (BASE / 'preguntas_20.csv').open(encoding='utf-8-sig', newline='') as archivo:
+        preguntas = list(csv.DictReader(archivo))
+    if len(preguntas) != 20:
+        raise ValueError('El archivo debe contener exactamente 20 preguntas.')
+    filas = []
+    for fila in preguntas:
+        print(f"Pregunta {fila['numero']}/20: {fila['pregunta']}")
         filas.append({
-            "numero": numero,
-            "pregunta": pregunta,
-            "respuesta_prolog": r_prolog,
-            "respuesta_llm": r_llm,
-            "observaciones": "",
+            'numero': fila['numero'],
+            'pregunta': fila['pregunta'],
+            'respuesta_prolog': responder_prolog(fila['pregunta']),
+            'respuesta_groq': responder_llm(fila['pregunta']),
+            'observaciones': '',
         })
+    with (BASE / 'resultados_20_preguntas.csv').open('w', encoding='utf-8-sig', newline='') as archivo:
+        escritor = csv.DictWriter(archivo, fieldnames=list(filas[0]))
+        escritor.writeheader()
+        escritor.writerows(filas)
+    print('Archivo generado: resultados_20_preguntas.csv')
 
-with SALIDA.open("w", encoding="utf-8-sig", newline="") as f:
-    w = csv.DictWriter(f, fieldnames=filas[0].keys())
-    w.writeheader()
-    w.writerows(filas)
 
-print(f"\nResultados guardados en: {SALIDA}")
+if __name__ == '__main__':
+    evaluar()

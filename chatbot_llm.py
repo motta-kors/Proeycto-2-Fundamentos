@@ -1,44 +1,49 @@
 import os
 from dotenv import load_dotenv
-from openai import OpenAI
-from conocimiento import CONOCIMIENTO
+from conocimiento import construir_contexto
 
 load_dotenv()
 
-MODELO = os.getenv("OPENAI_MODEL", "gpt-4.1-mini")
 
-INSTRUCCION = f"""
-Eres un chatbot educativo experto en el dominio acotado de pinturas y recubrimientos.
-Debes responder SOLO usando el conocimiento proporcionado abajo.
-No inventes productos, compatibilidades ni propiedades que no aparezcan en la base.
-Si la pregunta no puede responderse con la base, dilo claramente.
-Responde en español, de forma breve y clara.
+def responder_llm(pregunta):
+    if not isinstance(pregunta, str) or not pregunta.strip():
+        return 'Escribe una pregunta.'
+    if not os.getenv('GROQ_API_KEY'):
+        return 'Falta GROQ_API_KEY. Configura tu clave en el archivo .env.'
 
-BASE DE CONOCIMIENTO:
-{CONOCIMIENTO}
-""".strip()
-
-def responder_llm(pregunta: str) -> str:
-    if not pregunta or not pregunta.strip():
-        return "La pregunta está vacía."
-    if not os.getenv("OPENAI_API_KEY"):
-        return (
-            "Falta configurar OPENAI_API_KEY. Crea un archivo .env o define la variable "
-            "de entorno antes de ejecutar la versión LLM."
+    try:
+        from groq import Groq, GroqError
+        cliente = Groq(api_key=os.getenv('GROQ_API_KEY'), timeout=30)
+        respuesta = cliente.chat.completions.create(
+            model=os.getenv('GROQ_MODEL', 'llama-3.1-8b-instant'),
+            messages=[
+                {
+                    'role': 'system',
+                    'content': (
+                        'Eres un asistente de pinturas. Responde en español usando solo '
+                        'los hechos y reglas que siguen. No inventes datos. Si falta '
+                        'información, indícalo. Un hecho no registrado no significa '
+                        'que sea físicamente imposible.\n\n' + construir_contexto()
+                    ),
+                },
+                {'role': 'user', 'content': pregunta.strip()},
+            ],
         )
+        return respuesta.choices[0].message.content or 'El modelo no devolvió una respuesta.'
+    except ImportError:
+        return 'Instala las dependencias con: pip install -r requirements.txt'
+    except GroqError as error:
+        return f'Error de Groq ({type(error).__name__}). Revisa tu clave, conexión, modelo y límites de uso.'
+    except (OSError, TimeoutError):
+        return 'No se pudo conectar con Groq.'
 
-    client = OpenAI()
-    prompt = f"{INSTRUCCION}\n\nPREGUNTA DEL USUARIO:\n{pregunta.strip()}"
-    respuesta = client.responses.create(
-        model=MODELO,
-        input=prompt,
-    )
-    return respuesta.output_text.strip()
 
-if __name__ == "__main__":
-    print("Chatbot LLM de Pinturas. Escribe 'salir' para terminar.")
+if __name__ == '__main__':
     while True:
-        pregunta = input("Tú: ").strip()
-        if pregunta.lower() == "salir":
+        try:
+            pregunta = input('Pregunta (salir para terminar): ')
+        except (EOFError, KeyboardInterrupt):
             break
-        print("LLM:", responder_llm(pregunta))
+        if pregunta.strip().lower() == 'salir':
+            break
+        print(responder_llm(pregunta))

@@ -1,91 +1,73 @@
-# Proyecto 2 - Fundamentos de Inteligencia Artificial
+# Proyecto 2: chatbot de pinturas con Prolog y Groq
 
-Sistema experto y chatbot sobre **pinturas y recubrimientos**, implementado principalmente en **Prolog** y conectado a una interfaz web en **Flask/Python**.
+Este proyecto contiene dos versiones de un chatbot de pinturas y recubrimientos: una consulta hechos y reglas de SWI-Prolog; la otra usa un modelo de lenguaje mediante Groq. Las dos usan los datos de `chatbot_pinturas.pl` y se pueden probar desde la misma interfaz web.
 
-## Código fuente principal
+## Instalación en Windows (PowerShell)
 
-El archivo principal es:
+Necesitas Python 3.10 o superior y SWI-Prolog instalado.
 
-- `chatbot_pinturas.pl`
-
-La base de conocimiento contiene:
-
-- pinturas;
-- marcas;
-- tipos o bases;
-- acabados;
-- superficies;
-- usos interior/exterior;
-- características;
-- reglas de recomendación.
-
-## Archivos principales
-
-- `chatbot_pinturas.pl`: base de conocimiento y reglas en Prolog.
-- `prolog_bridge.py`: conecta Python con SWI-Prolog.
-- `app.py`: servidor Flask.
-- `templates/index.html`: interfaz del chatbot.
-- `conocimiento.py`: contexto utilizado por el modo LLM.
-- `chatbot_llm.py`: modo alternativo con LLM.
-- `preguntas_20.csv`: preguntas de evaluación.
-- `evaluar_20_preguntas.py`: ejecuta las 20 preguntas en ambos modos.
-
-## Requisitos
-
-1. Python 3.
-2. SWI-Prolog instalado y disponible mediante el comando `swipl`.
-3. Dependencias Python:
-
-```bash
+```powershell
+py -m venv .venv
+.\.venv\Scripts\Activate.ps1
 pip install -r requirements.txt
+Copy-Item .env.example .env
+notepad .env
 ```
 
-## Ejecutar la aplicación web
+Genera una clave en https://console.groq.com/keys y escribe en `.env`:
 
-```bash
+```dotenv
+GROQ_API_KEY=tu_clave_de_groq
+GROQ_MODEL=llama-3.1-8b-instant
+SWIPL_PATH=swipl
+```
+
+`SWIPL_PATH=swipl` funciona si SWI-Prolog está en el PATH. Si no, coloca la ruta completa, por ejemplo `SWIPL_PATH=C:/Program Files/swipl/bin/swipl.exe`.
+
+El modo Prolog funciona sin una clave de API. El modo Groq necesita conexión a Internet y está sujeto a los límites de la cuenta. Puedes cambiar el modelo editando solamente `GROQ_MODEL`.
+
+## Ejecución
+
+```powershell
+python verificar_instalacion.py
+python -m unittest discover -s tests -v
 python app.py
 ```
 
-Luego abrir la dirección local que muestra Flask.
+Visita http://127.0.0.1:5000 y selecciona **Prolog** o **Groq + Python**. Prueba preguntas como `¿Qué pinturas sirven para metal exterior?`, `¿Qué productos son de la marca Tekbond?` o `¿Qué acabado tiene spray acrílico?`.
 
-## Ejecutar Prolog directamente
+Para iniciar el chatbot Prolog directamente:
 
-```bash
+```powershell
 swipl -s chatbot_pinturas.pl
 ```
 
-Dentro de SWI-Prolog:
+Dentro de SWI-Prolog ejecuta `iniciar_chat.` y escribe `salir` para terminar. También puedes consultar hechos, por ejemplo `recomendable_uso(P,metal,exterior).`.
 
-```prolog
-?- iniciar_chat.
+Para probar las veinte preguntas en ambas versiones:
+
+```powershell
+python evaluar_20_preguntas.py
 ```
 
-También se pueden realizar consultas directas:
+Esto genera `resultados_20_preguntas.csv` para preparar el informe. Las preguntas de Groq consumen cuota de API. Las pruebas automáticas de Python usan un simulador del motor Prolog; no sustituyen la comprobación real en Windows.
 
-```prolog
-?- sirve_para(Pintura, metal).
-?- producto_de_marca(Pintura, tekbond).
-?- es_mate(Pintura).
-?- al_agua(Pintura).
-?- en_aerosol(Pintura).
-?- protege_metal(Pintura).
-?- recomendable(anticorrosivo, metal).
-?- recomendable_uso(Pintura, metal, exterior).
-```
+## Archivos
 
-## Ejemplos de preguntas para el chatbot web
+- `chatbot_pinturas.pl`: base de conocimiento, reglas y diálogo Prolog.
+- `conocimiento.py`: lee los hechos de Prolog para el chatbot Groq.
+- `prolog_bridge.py`: convierte preguntas simples en consultas Prolog.
+- `chatbot_llm.py`: realiza las consultas a Groq.
+- `app.py`, `templates/` y `static/`: interfaz web con ambos modos.
+- `preguntas_20.csv`, `evaluar_20_preguntas.py`: comparación de veinte preguntas.
+- `Informe_Final_Plantilla.md`: estructura del informe de entrega.
 
-- ¿Qué pinturas sirven para metal?
-- ¿Qué pinturas sirven para metal exterior?
-- ¿Qué productos son de la marca Tekbond?
-- ¿Qué tipo tiene spray acrílico?
-- ¿Qué acabado tiene spray acrílico?
-- ¿Qué pinturas tienen acabado mate?
-- ¿Qué pinturas son al agua?
-- ¿Qué pinturas vienen en aerosol?
-- ¿Qué producto protege el metal del óxido?
-- ¿Qué características tiene primer automotriz?
+## Entrega y evaluación
 
-## Nota
+El enunciado exige, además del programa, explicar el dominio y su modelamiento, presentar las respuestas reales a veinte preguntas para ambas versiones, comparar resultados y escribir conclusiones, fortalezas, debilidades y propuestas de mejora. La plantilla incluida sirve para completar esa parte después de ejecutar el programa. No se incluyen respuestas de API inventadas.
 
-La aplicación web utiliza la misma base de conocimiento definida en Prolog. El puente Python no mantiene una segunda base independiente para las respuestas Prolog; detecta los conceptos de la pregunta y ejecuta consultas sobre `chatbot_pinturas.pl`.
+Al modificar los hechos de `chatbot_pinturas.pl`, las consultas nuevas de ambos modos usan la base actualizada. Para agregar una superficie es conveniente declarar también `superficie(nueva_superficie).` y relacionarla con `sirve_para/2`.
+
+El parser Prolog utiliza palabras clave y reconoce nombres de pinturas compuestos, pero no interpreta cualquier formulación posible en lenguaje natural.
+
+No subas `.env` al repositorio: la clave personal está excluida mediante `.gitignore`.

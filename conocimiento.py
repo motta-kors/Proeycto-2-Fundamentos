@@ -1,57 +1,30 @@
-CONOCIMIENTO = '''
-DOMINIO: Pinturas y recubrimientos.
+import re
+from pathlib import Path
 
-Pinturas registradas:
-- esmalte_sintetico
-- esmalte_al_agua
-- latex_interior
-- latex_exterior
-- oleo_opaco
-- anticorrosivo
-- barniz_marino
-- laca_nitro
-- spray_acrilico
-- spray_alta_temperatura
-- primer_automotriz
-- impermeabilizante
-- pintura_piso
-- pintura_piscina
-- pintura_tizada
+ARCHIVO = Path(__file__).with_name('chatbot_pinturas.pl')
+PREDICADOS = ('pintura', 'marca', 'superficie', 'es_marca', 'tipo', 'acabado', 'sirve_para', 'uso', 'caracteristica')
+PATRON = re.compile(r'^([a-z_]+)\(([a-z0-9_, ]+)\)\.$')
 
-Marcas registradas:
-sipa, ceresita, tricolor, chilcorrofin, mtn, molotow, tekbond, toro_negro.
 
-Superficies:
-madera, metal, muro, hormigon, yeso, auto, piscina, piso, graffiti.
+def leer_hechos():
+    hechos = {nombre: [] for nombre in PREDICADOS}
+    for linea in ARCHIVO.read_text(encoding='utf-8').splitlines():
+        coincidencia = PATRON.fullmatch(linea.strip())
+        if coincidencia:
+            nombre, valores = coincidencia.groups()
+            argumentos = tuple(valor.strip() for valor in valores.split(','))
+            if nombre in hechos and len(argumentos) == (1 if nombre in PREDICADOS[:3] else 2):
+                hechos[nombre].append(argumentos)
+    return hechos
 
-Tipos/base:
-agua, solvente, aerosol.
 
-Acabados:
-mate, brillante, semibrillo.
-
-Relaciones principales:
-- es_marca(Pintura, Marca)
-- tipo(Pintura, Tipo)
-- acabado(Pintura, Acabado)
-- sirve_para(Pintura, Superficie)
-- uso(Pintura, interior/exterior)
-- caracteristica(Pintura, Caracteristica)
-
-Características registradas:
-- anticorrosivo: protege_oxido
-- barniz_marino: resistente_humedad
-- latex_exterior: resistente_clima
-- impermeabilizante: repele_agua
-- spray_alta_temperatura: resistente_calor
-- primer_automotriz: mejora_adherencia
-- pintura_piscina: resistente_agua
-- pintura_piso: alto_transito
-- spray_acrilico: secado_rapido
-- pintura_tizada: alta_cobertura
-
-REGLA PRINCIPAL:
-Responder solamente con información respaldada por la base Prolog del proyecto.
-No inventar productos, marcas, compatibilidades, acabados ni características.
-Si la base no contiene la respuesta, indicarlo claramente.
-'''.strip()
+def construir_contexto():
+    hechos = leer_hechos()
+    lineas = [f"{nombre}({', '.join(argumentos)})." for nombre, datos in hechos.items() for argumentos in datos]
+    lineas += [
+        'Reglas:',
+        'recomendable(P,S) si sirve_para(P,S).',
+        'recomendable_uso(P,S,U) si sirve_para(P,S) y uso(P,U).',
+        'protege_metal(P) si sirve_para(P,metal) y caracteristica(P,protege_oxido).',
+    ]
+    return '\n'.join(lineas)

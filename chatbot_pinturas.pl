@@ -1,14 +1,5 @@
-% -- PROYECTO 2 - PROLOG --
-% -- SISTEMA EXPERTO / CHATBOT DE PINTURAS --
-% Base principal alineada con Pinturas_Motta.pl
-
 :- encoding(utf8).
 
-% =============================
-% HECHOS
-% =============================
-
-% PRODUCTOS pintura(X).
 pintura(esmalte_sintetico).
 pintura(esmalte_al_agua).
 pintura(latex_interior).
@@ -25,7 +16,6 @@ pintura(pintura_piso).
 pintura(pintura_piscina).
 pintura(pintura_tizada).
 
-% MARCAS
 marca(sipa).
 marca(ceresita).
 marca(tricolor).
@@ -35,7 +25,6 @@ marca(molotow).
 marca(tekbond).
 marca(toro_negro).
 
-% MARCA DEL PRODUCTO
 es_marca(esmalte_sintetico, sipa).
 es_marca(esmalte_al_agua, ceresita).
 es_marca(latex_interior, sipa).
@@ -52,7 +41,6 @@ es_marca(pintura_piso, tricolor).
 es_marca(pintura_piscina, chilcorrofin).
 es_marca(pintura_tizada, toro_negro).
 
-% TIPO / BASE
 tipo(esmalte_sintetico, solvente).
 tipo(esmalte_al_agua, agua).
 tipo(latex_interior, agua).
@@ -69,7 +57,6 @@ tipo(pintura_piso, agua).
 tipo(pintura_piscina, solvente).
 tipo(pintura_tizada, aerosol).
 
-% ACABADOS
 acabado(esmalte_sintetico, brillante).
 acabado(esmalte_al_agua, semibrillo).
 acabado(latex_interior, mate).
@@ -87,7 +74,6 @@ acabado(pintura_piso, semibrillo).
 acabado(pintura_piscina, semibrillo).
 acabado(pintura_tizada, mate).
 
-% SUPERFICIES
 superficie(madera).
 superficie(metal).
 superficie(muro).
@@ -98,7 +84,6 @@ superficie(piscina).
 superficie(piso).
 superficie(graffiti).
 
-% PRODUCTO APTO PARA SUPERFICIE
 sirve_para(esmalte_sintetico, madera).
 sirve_para(esmalte_sintetico, metal).
 sirve_para(esmalte_al_agua, madera).
@@ -125,7 +110,6 @@ sirve_para(pintura_piso, hormigon).
 sirve_para(pintura_piscina, piscina).
 sirve_para(pintura_tizada, graffiti).
 
-% USO: interior / exterior
 uso(esmalte_sintetico, interior).
 uso(esmalte_sintetico, exterior).
 uso(esmalte_al_agua, interior).
@@ -146,7 +130,6 @@ uso(pintura_piso, exterior).
 uso(pintura_piscina, exterior).
 uso(pintura_tizada, exterior).
 
-% CARACTERISTICAS
 caracteristica(anticorrosivo, protege_oxido).
 caracteristica(barniz_marino, resistente_humedad).
 caracteristica(latex_exterior, resistente_clima).
@@ -157,10 +140,6 @@ caracteristica(pintura_piscina, resistente_agua).
 caracteristica(pintura_piso, alto_transito).
 caracteristica(spray_acrilico, secado_rapido).
 caracteristica(pintura_tizada, alta_cobertura).
-
-% =============================
-% REGLAS
-% =============================
 
 recomendable(Pintura, Superficie) :-
     pintura(Pintura),
@@ -213,145 +192,167 @@ producto_con_caracteristica(Pintura, Caracteristica) :-
     pintura(Pintura),
     caracteristica(Pintura, Caracteristica).
 
-% =============================
-% CONSULTAS DE EJEMPLO
-% =============================
-
-% ?- pintura(latex_interior).
-% ?- tipo(latex_interior, Tipo).
-% ?- sirve_para(Pintura, metal).
-% ?- para_exterior(Pintura).
-% ?- producto_de_marca(Pintura, tekbond).
-% ?- es_mate(Pintura).
-% ?- al_agua(Pintura).
-% ?- en_aerosol(Pintura).
-% ?- protege_metal(Pintura).
-% ?- recomendable(anticorrosivo, metal).
-% ?- recomendable_uso(Pintura, metal, exterior).
-% ?- sirve_para(Pintura, piscina).
-% ?- sirve_para(Pintura, graffiti).
-% ?- comparten_superficie(spray_acrilico, Otro, Superficie).
-
-% =============================
-% CHATBOT DE TERMINAL
-% =============================
-% Para iniciarlo manualmente:
-% ?- iniciar_chat.
-%
-% No se usa initialization/1 porque este archivo también es consultado
-% desde Python y una inicialización automática bloquearía la API web.
-
 iniciar_chat :-
     nl,
-    write('---------------------------------------------'), nl,
-    write('Bienvenido al chatbot de Pinturas Motta!'), nl,
-    write('Puedes preguntar por pinturas, marcas, tipos,'), nl,
-    write('superficies, acabados y usos.'), nl,
-    write('Escribe "salir" para terminar.'), nl,
-    write('---------------------------------------------'), nl,
+    writeln('Chatbot de pinturas y recubrimientos'),
+    writeln('Pregunta por marcas, superficies, tipos, acabados y usos.'),
+    writeln('Escribe salir para terminar.'),
     bucle_chat.
 
+iniciar :- iniciar_chat.
+
 bucle_chat :-
-    nl,
-    write('Usuario > '),
-    flush_output(current_output),
-    read_line_to_string(user_input, Frase),
-    (   Frase == "salir"
-    ->  write('Bot > Hasta pronto!'), nl
-    ;   procesar_consulta(Frase, Respuesta),
-        format('Bot > ~w~n', [Respuesta]),
-        bucle_chat
+    nl, write('Usuario > '), flush_output(current_output),
+    read_line_to_string(user_input, Entrada),
+    (   Entrada == end_of_file
+    ->  true
+    ;   normalizar_tokens(Entrada, Tokens),
+        (   Tokens == [salir]
+        ->  writeln('Bot > Hasta pronto!')
+        ;   interpretar(Tokens, Respuesta),
+            format('Bot > ~s~n', [Respuesta]),
+            bucle_chat
+        )
     ).
 
 procesar_consulta(Frase, Respuesta) :-
-    string_lower(Frase, FraseMinus),
-    split_string(FraseMinus, " ", " ,.?¿¡!", TokenStr),
-    maplist(atom_string, Tokens, TokenStr),
+    normalizar_tokens(Frase, Tokens),
     interpretar(Tokens, Respuesta).
 
-interpretar(Tokens, Respuesta) :-
-    (member(hola, Tokens) ; member(buenas, Tokens)),
-    !,
-    Respuesta = 'Hola! Preguntame por pinturas, marcas, superficies, tipos o acabados.'.
+sin_tilde('á', a) :- !.
+sin_tilde('é', e) :- !.
+sin_tilde('í', i) :- !.
+sin_tilde('ó', o) :- !.
+sin_tilde('ú', u) :- !.
+sin_tilde('ü', u) :- !.
+sin_tilde('ñ', n) :- !.
+sin_tilde(C, C).
+
+caracter_normalizado(Entrada, Salida) :-
+    sin_tilde(Entrada, SinTilde),
+    ( char_type(SinTilde, alnum) -> Salida = SinTilde ; Salida = ' ' ).
+
+normalizar_tokens(Frase, Tokens) :-
+    string_lower(Frase, Minusculas),
+    string_chars(Minusculas, Caracteres),
+    maplist(caracter_normalizado, Caracteres, Limpios),
+    string_chars(Texto, Limpios),
+    split_string(Texto, ' ', ' ', Palabras),
+    maplist(atom_string, Tokens, Palabras).
+
+quitar_secuencia(Lista, Buscada, Resto) :-
+    append(Prefijo, Sufijo, Lista),
+    append(Buscada, Cola, Sufijo),
+    append(Prefijo, Cola, Resto), !.
+
+identificar(Predicado, Tokens, Valor, Resto) :-
+    call(Predicado, Valor),
+    atomic_list_concat(Palabras, '_', Valor),
+    quitar_secuencia(Tokens, Palabras, Resto), !.
+
+alguna_palabra(Tokens, Opciones) :-
+    member(Palabra, Opciones), member(Palabra, Tokens), !.
+
+interpretar(Tokens, "Hola! Puedes preguntar por pinturas, marcas, superficies, tipos, acabados y usos.") :-
+    alguna_palabra(Tokens, [hola, buenas]), !.
 
 interpretar(Tokens, Respuesta) :-
-    member(marca, Tokens),
-    member(Pintura, Tokens),
-    pintura(Pintura),
-    !,
+    identificar(pintura, Tokens, Pintura, Resto),
+    alguna_palabra(Resto, [marca, fabricante]), !,
     findall(M, es_marca(Pintura, M), Marcas),
-    format(string(Respuesta), 'La pintura ~w es de la marca: ~w', [Pintura, Marcas]).
+    format(string(Respuesta), 'La marca de ~w es: ~w', [Pintura, Marcas]).
 
 interpretar(Tokens, Respuesta) :-
-    member(Marca, Tokens),
-    marca(Marca),
-    !,
-    findall(P, es_marca(P, Marca), Productos),
-    format(string(Respuesta), 'Los productos de la marca ~w son: ~w', [Marca, Productos]).
+    identificar(marca, Tokens, Marca, _), !,
+    findall(P, producto_de_marca(P, Marca), Productos),
+    format(string(Respuesta), 'Los productos de ~w son: ~w', [Marca, Productos]).
 
 interpretar(Tokens, Respuesta) :-
-    (member(sirve, Tokens) ; member(superficie, Tokens)),
-    member(Pintura, Tokens),
-    pintura(Pintura),
-    !,
-    findall(S, sirve_para(Pintura, S), Superficies),
-    format(string(Respuesta), '~w sirve para las siguientes superficies: ~w', [Pintura, Superficies]).
-
-interpretar(Tokens, Respuesta) :-
-    member(Superficie, Tokens),
-    superficie(Superficie),
-    !,
-    findall(P, sirve_para(P, Superficie), Pinturas),
-    format(string(Respuesta), 'Las pinturas recomendadas para ~w son: ~w', [Superficie, Pinturas]).
-
-interpretar(Tokens, Respuesta) :-
-    member(tipo, Tokens),
-    member(Pintura, Tokens),
-    pintura(Pintura),
-    !,
+    identificar(pintura, Tokens, Pintura, Resto),
+    alguna_palabra(Resto, [tipo, base]), !,
     findall(T, tipo(Pintura, T), Tipos),
     format(string(Respuesta), 'La pintura ~w es de tipo/base: ~w', [Pintura, Tipos]).
 
 interpretar(Tokens, Respuesta) :-
-    member(acabado, Tokens),
-    member(Pintura, Tokens),
-    pintura(Pintura),
-    !,
+    identificar(pintura, Tokens, Pintura, Resto),
+    member(acabado, Resto), !,
     findall(A, acabado(Pintura, A), Acabados),
-    format(string(Respuesta), 'La pintura ~w tiene acabado: ~w', [Pintura, Acabados]).
+    format(string(Respuesta), 'El acabado de ~w es: ~w', [Pintura, Acabados]).
 
 interpretar(Tokens, Respuesta) :-
-    member(Acabado, Tokens),
-    member(Acabado, [mate, brillante, semibrillo]),
-    !,
-    findall(P, acabado(P, Acabado), Pinturas),
-    format(string(Respuesta), 'Las pinturas con acabado ~w son: ~w', [Acabado, Pinturas]).
-
-interpretar(Tokens, Respuesta) :-
-    member(Uso, Tokens),
-    member(Uso, [interior, exterior]),
-    !,
-    findall(P, uso(P, Uso), Pinturas),
-    format(string(Respuesta), 'Las pinturas para ~w son: ~w', [Uso, Pinturas]).
-
-interpretar(Tokens, Respuesta) :-
-    member(Pintura, Tokens), pintura(Pintura),
-    member(Superficie, Tokens), superficie(Superficie),
-    !,
-    (   recomendable(Pintura, Superficie)
-    ->  format(string(Respuesta), 'Si, ~w es recomendable para ~w.', [Pintura, Superficie])
-    ;   format(string(Respuesta), 'No, ~w no esta registrada como recomendable para ~w.', [Pintura, Superficie])
-    ).
-
-interpretar(Tokens, Respuesta) :-
-    (member(caracteristica, Tokens) ; member(caracteristicas, Tokens)),
-    member(Pintura, Tokens),
-    pintura(Pintura),
-    !,
+    identificar(pintura, Tokens, Pintura, Resto),
+    alguna_palabra(Resto, [caracteristica, caracteristicas, propiedad, propiedades]), !,
     findall(C, caracteristica(Pintura, C), Caracteristicas),
-    (   Caracteristicas \= []
-    ->  format(string(Respuesta), '~w tiene estas caracteristicas: ~w', [Pintura, Caracteristicas])
-    ;   format(string(Respuesta), 'No hay caracteristicas especiales registradas para ~w.', [Pintura])
-    ).
+    format(string(Respuesta), 'Caracteristicas de ~w: ~w', [Pintura, Caracteristicas]).
 
-interpretar(_, 'No logro entender tu pregunta. Prueba preguntando por una pintura, marca, superficie, tipo, acabado o uso.').
+interpretar(Tokens, Respuesta) :-
+    identificar(pintura, Tokens, Pintura, Resto),
+    identificar(superficie, Resto, Superficie, Resto2),
+    member(Uso, [interior, exterior]), member(Uso, Resto2), !,
+    ( recomendable_uso(Pintura, Superficie, Uso)
+    -> format(string(Respuesta), 'Si, ~w esta registrada para ~w en ~w.', [Pintura, Superficie, Uso])
+    ;  format(string(Respuesta), 'No consta uso de ~w para ~w en ~w.', [Pintura, Superficie, Uso]) ).
+
+interpretar(Tokens, Respuesta) :-
+    identificar(pintura, Tokens, Pintura, Resto),
+    identificar(superficie, Resto, Superficie, _), !,
+    ( recomendable(Pintura, Superficie)
+    -> format(string(Respuesta), 'Si, ~w esta registrada para ~w.', [Pintura, Superficie])
+    ;  format(string(Respuesta), 'No consta que ~w sirva para ~w.', [Pintura, Superficie]) ).
+
+interpretar(Tokens, Respuesta) :-
+    identificar(pintura, Tokens, Pintura, Resto),
+    member(Uso, [interior, exterior]), member(Uso, Resto), !,
+    ( uso(Pintura, Uso)
+    -> format(string(Respuesta), 'Si, ~w esta registrada para ~w.', [Pintura, Uso])
+    ;  format(string(Respuesta), 'No consta uso de ~w en ~w.', [Pintura, Uso]) ).
+
+interpretar(Tokens, Respuesta) :-
+    identificar(pintura, Tokens, Pintura, Resto),
+    alguna_palabra(Resto, [sirve, superficies, superficie, usar, uso]), !,
+    findall(S, sirve_para(Pintura, S), Superficies),
+    format(string(Respuesta), '~w sirve para: ~w', [Pintura, Superficies]).
+
+interpretar(Tokens, Respuesta) :-
+    identificar(superficie, Tokens, metal, _),
+    alguna_palabra(Tokens, [oxido, corrosion]), !,
+    findall(P, protege_metal(P), Pinturas),
+    format(string(Respuesta), 'Para proteger metal del oxido: ~w', [Pinturas]).
+
+interpretar(Tokens, Respuesta) :-
+    identificar(superficie, Tokens, Superficie, Resto),
+    member(Uso, [interior, exterior]), member(Uso, Resto), !,
+    findall(P, recomendable_uso(P, Superficie, Uso), Pinturas),
+    format(string(Respuesta), 'Pinturas para ~w en ~w: ~w', [Superficie, Uso, Pinturas]).
+
+interpretar(Tokens, Respuesta) :-
+    identificar(superficie, Tokens, Superficie, _), !,
+    findall(P, sirve_para(P, Superficie), Pinturas),
+    format(string(Respuesta), 'Pinturas para ~w: ~w', [Superficie, Pinturas]).
+
+interpretar(Tokens, Respuesta) :-
+    member(Uso, [interior, exterior]), member(Uso, Tokens), !,
+    findall(P, uso(P, Uso), Pinturas),
+    format(string(Respuesta), 'Pinturas para ~w: ~w', [Uso, Pinturas]).
+
+interpretar(Tokens, Respuesta) :-
+    member(Acabado, [mate, brillante, semibrillo]), member(Acabado, Tokens), !,
+    findall(P, acabado(P, Acabado), Pinturas),
+    format(string(Respuesta), 'Pinturas con acabado ~w: ~w', [Acabado, Pinturas]).
+
+interpretar(Tokens, Respuesta) :-
+    member(agua, Tokens), !,
+    findall(P, al_agua(P), Pinturas),
+    format(string(Respuesta), 'Pinturas al agua: ~w', [Pinturas]).
+
+interpretar(Tokens, Respuesta) :-
+    alguna_palabra(Tokens, [aerosol, aerosoles]), !,
+    findall(P, en_aerosol(P), Pinturas),
+    format(string(Respuesta), 'Pinturas en aerosol: ~w', [Pinturas]).
+
+interpretar(Tokens, Respuesta) :-
+    member(solvente, Tokens), !,
+    findall(P, tipo(P, solvente), Pinturas),
+    format(string(Respuesta), 'Pinturas base solvente: ~w', [Pinturas]).
+
+interpretar(_, "No pude interpretar la pregunta. Consulta por pinturas, marcas, superficies, usos, tipos o acabados.").
