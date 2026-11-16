@@ -9,16 +9,14 @@ Necesitas Python 3.10 o superior y SWI-Prolog instalado.
 ```powershell
 py -m venv .venv
 .\.venv\Scripts\Activate.ps1
-pip install -r requirements.txt
-Copy-Item .env.example .env
-notepad .env
+pip install -r require
 ```
 
 Genera una clave en https://console.groq.com/keys y escribe en `.env`:
 
 ```dotenv
 GROQ_API_KEY=tu_clave_de_groq
-GROQ_MODEL=llama-3.1-8b-instant
+GROQ_MODEL=openai/gpt-oss-20b
 SWIPL_PATH=swipl
 ```
 
@@ -61,13 +59,3 @@ Esto genera `resultados_20_preguntas.csv` para preparar el informe. Las pregunta
 - `app.py`, `templates/` y `static/`: interfaz web con ambos modos.
 - `preguntas_20.csv`, `evaluar_20_preguntas.py`: comparación de veinte preguntas.
 - `Informe_Final_Plantilla.md`: estructura del informe de entrega.
-
-## Entrega y evaluación
-
-El enunciado exige, además del programa, explicar el dominio y su modelamiento, presentar las respuestas reales a veinte preguntas para ambas versiones, comparar resultados y escribir conclusiones, fortalezas, debilidades y propuestas de mejora. La plantilla incluida sirve para completar esa parte después de ejecutar el programa. No se incluyen respuestas de API inventadas.
-
-Al modificar los hechos de `chatbot_pinturas.pl`, las consultas nuevas de ambos modos usan la base actualizada. Para agregar una superficie es conveniente declarar también `superficie(nueva_superficie).` y relacionarla con `sirve_para/2`.
-
-El parser Prolog utiliza palabras clave y reconoce nombres de pinturas compuestos, pero no interpreta cualquier formulación posible en lenguaje natural.
-
-No subas `.env` al repositorio: la clave personal está excluida mediante `.gitignore`.
